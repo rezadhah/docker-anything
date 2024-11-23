@@ -4,12 +4,17 @@ services:
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
     environment:
+      # Port clients will use to connect to ZooKeeper
       ZOOKEEPER_CLIENT_PORT: 2181
+      # Basic time unit in milliseconds used by ZooKeeper for heartbeats
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
     networks:
       - kafka-net
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
 
   kafka-1:
     image: confluentinc/cp-kafka:latest
@@ -17,18 +22,39 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
-      - "29092:29092"
+      - "9092:9092"  # External listener port
+      - "29092:29092"  # Internal listener port
     environment:
+      # Unique ID for this broker in the cluster
       KAFKA_BROKER_ID: 1
+      # Connection string for ZooKeeper
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Define listener endpoints for both internal (broker-to-broker) and external (client) communication
       KAFKA_LISTENERS: INSIDE://kafka-1:29092,OUTSIDE://0.0.0.0:9092
+      # Advertised listeners that clients will use to connect
       KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka-1:29092,OUTSIDE://localhost:9092
+      # Security protocol mapping for each listener
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      # Listener used for inter-broker communication
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      # Replication factor for internal topics like __consumer_offsets
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      # How long to keep messages (168 hours = 7 days)
+      KAFKA_LOG_RETENTION_HOURS: 168
+      # Maximum size of a log segment file (1GB)
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      # How often to check for log retention (5 minutes)
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      # Allow automatic creation of topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # Default number of partitions for automatically created topics
+      KAFKA_NUM_PARTITIONS: 3
+      # Default replication factor for automatically created topics
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
     networks:
       - kafka-net
+    volumes:
+      - kafka_1_data:/var/lib/kafka/data
 
   kafka-2:
     image: confluentinc/cp-kafka:latest
@@ -36,18 +62,39 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9093:9093"
-      - "29093:29093"
+      - "9093:9093"  # External listener port
+      - "29093:29093"  # Internal listener port
     environment:
+      # Unique ID for this broker in the cluster
       KAFKA_BROKER_ID: 2
+      # Connection string for ZooKeeper
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Define listener endpoints for both internal (broker-to-broker) and external (client) communication
       KAFKA_LISTENERS: INSIDE://kafka-2:29093,OUTSIDE://0.0.0.0:9093
+      # Advertised listeners that clients will use to connect
       KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka-2:29093,OUTSIDE://localhost:9093
+      # Security protocol mapping for each listener
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      # Listener used for inter-broker communication
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      # Replication factor for internal topics like __consumer_offsets
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      # How long to keep messages (168 hours = 7 days)
+      KAFKA_LOG_RETENTION_HOURS: 168
+      # Maximum size of a log segment file (1GB)
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      # How often to check for log retention (5 minutes)
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      # Allow automatic creation of topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # Default number of partitions for automatically created topics
+      KAFKA_NUM_PARTITIONS: 3
+      # Default replication factor for automatically created topics
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
     networks:
       - kafka-net
+    volumes:
+      - kafka_2_data:/var/lib/kafka/data
 
   kafka-3:
     image: confluentinc/cp-kafka:latest
@@ -55,19 +102,54 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9094:9094"
-      - "29094:29094"
+      - "9094:9094"  # External listener port
+      - "29094:29094"  # Internal listener port
     environment:
+      # Unique ID for this broker in the cluster
       KAFKA_BROKER_ID: 3
+      # Connection string for ZooKeeper
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Define listener endpoints for both internal (broker-to-broker) and external (client) communication
       KAFKA_LISTENERS: INSIDE://kafka-3:29094,OUTSIDE://0.0.0.0:9094
+      # Advertised listeners that clients will use to connect
       KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka-3:29094,OUTSIDE://localhost:9094
+      # Security protocol mapping for each listener
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      # Listener used for inter-broker communication
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      # Replication factor for internal topics like __consumer_offsets
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      # How long to keep messages (168 hours = 7 days)
+      KAFKA_LOG_RETENTION_HOURS: 168
+      # Maximum size of a log segment file (1GB)
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      # How often to check for log retention (5 minutes)
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      # Allow automatic creation of topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # Default number of partitions for automatically created topics
+      KAFKA_NUM_PARTITIONS: 3
+      # Default replication factor for automatically created topics
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
     networks:
       - kafka-net
+    volumes:
+      - kafka_3_data:/var/lib/kafka/data
 
 networks:
   kafka-net:
     driver: bridge
+
+volumes:
+  # Persistent storage for ZooKeeper data and logs
+  zookeeper_data:
+    driver: local
+  zookeeper_log:
+    driver: local
+  # Persistent storage for each Kafka broker
+  kafka_1_data:
+    driver: local
+  kafka_2_data:
+    driver: local
+  kafka_3_data:
+    driver: local
