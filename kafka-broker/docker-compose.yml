@@ -137,8 +137,12 @@ services:
       - kafka_3_data:/var/lib/kafka/data
 
 networks:
+  # Custom network "kafka-net" for Kafka cluster:
+  # - Enables containers to find each other by service names (e.g., "zookeeper:2181")
+  # - Isolates Kafka/ZooKeeper traffic from other Docker containers
+  # - Allows port mapping to host machine (e.g., localhost:9092)
   kafka-net:
-    driver: bridge
+    driver: bridge  # Bridge driver for single-host networking with container isolation
 
 volumes:
   # Persistent storage for ZooKeeper data and logs
