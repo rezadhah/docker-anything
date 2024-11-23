@@ -1,4 +1,3 @@
-version: '3'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -10,8 +9,6 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
-    networks:
-      - kafka-net
     volumes:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_log:/var/lib/zookeeper/log
@@ -51,8 +48,8 @@ services:
       KAFKA_NUM_PARTITIONS: 3
       # Default replication factor for automatically created topics
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-    networks:
-      - kafka-net
+      # Explicitly set the log directory
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
     volumes:
       - kafka_1_data:/var/lib/kafka/data
 
@@ -91,8 +88,8 @@ services:
       KAFKA_NUM_PARTITIONS: 3
       # Default replication factor for automatically created topics
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-    networks:
-      - kafka-net
+      # Explicitly set the log directory
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
     volumes:
       - kafka_2_data:/var/lib/kafka/data
 
@@ -131,18 +128,10 @@ services:
       KAFKA_NUM_PARTITIONS: 3
       # Default replication factor for automatically created topics
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-    networks:
-      - kafka-net
+      # Explicitly set the log directory
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
     volumes:
       - kafka_3_data:/var/lib/kafka/data
-
-networks:
-  # Custom network "kafka-net" for Kafka cluster:
-  # - Enables containers to find each other by service names (e.g., "zookeeper:2181")
-  # - Isolates Kafka/ZooKeeper traffic from other Docker containers
-  # - Allows port mapping to host machine (e.g., localhost:9092)
-  kafka-net:
-    driver: bridge  # Bridge driver for single-host networking with container isolation
 
 volumes:
   # Persistent storage for ZooKeeper data and logs
