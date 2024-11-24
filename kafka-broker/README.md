@@ -93,6 +93,31 @@ docker exec -i kafka-1 kafka-console-producer --bootstrap-server kafka-1:29092 -
 docker exec -i kafka-1 kafka-console-consumer --bootstrap-server kafka-1:29092 --topic test-topic --from-beginning
 ```
 
+## Automated Testing
+The repository includes automated test scripts for both Windows and Linux environments:
+
+### Windows (PowerShell)
+Run the PowerShell test script:
+```powershell
+.\test-cluster.ps1
+```
+
+### Linux (Bash)
+Run the Bash test script:
+```bash
+chmod +x test-cluster.sh
+./test-cluster.sh
+```
+
+These scripts automatically:
+1. Verify cluster connectivity
+2. Create a test topic with replication
+3. Send messages through different brokers
+4. Verify message replication
+5. Clean up test resources
+
+The scripts will output either "SUCCESS" or fail with an error message.
+
 ## Troubleshooting
 1. Check container status:
 ```bash
